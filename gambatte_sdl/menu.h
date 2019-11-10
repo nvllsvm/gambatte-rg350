@@ -4,6 +4,7 @@
 #include <gambatte.h>
 #include "src/blitterwrapper.h"
 #include "libmenu.h"
+#include "turboskip.h"
 
 extern gambatte::GB *gambatte_p;
 extern BlitterWrapper *blitter_p;
@@ -11,7 +12,7 @@ extern SDL_Surface *surface;
 
 void menu_set_screen(SDL_Surface *set_screen);
 int init_fps_font();
-void init_globals(gambatte::GB *gambatte, BlitterWrapper *blitter);
+void init_globals(gambatte::GB *gambatte, BlitterWrapper *blitter, TurboSkip *turboSkip);
 int init_menu();
 void main_menu();
 void main_menu_with_anim();

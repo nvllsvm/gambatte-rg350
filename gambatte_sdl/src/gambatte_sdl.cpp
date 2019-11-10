@@ -24,7 +24,6 @@
 #include "resample/resamplerinfo.h"
 #include "skipsched.h"
 #include "str_to_sdlkey.h"
-#include "turboskip.h"
 #include "videolink/vfilterinfo.h"
 #include <gambatte.h>
 #include <pakinfo.h>
@@ -597,7 +596,7 @@ private:
 
 	bool handleEvents(BlitterWrapper &blitter, TurboSkip &turboSkip);
 	int run(long sampleRate, int latency, int periods,
-	        ResamplerInfo const &resamplerInfo, BlitterWrapper &blitter);
+	        ResamplerInfo const &resamplerInfo, BlitterWrapper &blitter, TurboSkip &turboSkip);
 	void refreshKeymaps();
 };
 
@@ -780,8 +779,10 @@ int GambatteSdl::exec(int const argc, char const *const argv[]) {
 	BlitterWrapper blitter(vfOption.filter(),
 	                       scaleOption.scale(), yuvOption.isSet(),
 	                       fsOption.isSet());
+    TurboSkip turboSkip;
+    turboSkip.setSpeed(fastforward_speed);
 
-	init_globals(&gambatte, &blitter); //init global pointers
+	init_globals(&gambatte, &blitter, &turboSkip); //init global pointers
 
 	blitter.setBufferDimensions(); //set appropiate resolution on startup
 
@@ -803,7 +804,7 @@ int GambatteSdl::exec(int const argc, char const *const argv[]) {
 	inputGetter.is = 0;
 
 	return run(rateOption.rate(), latencyOption.latency(), periodsOption.periods(),
-	           resamplerOption.resampler(), blitter);
+	           resamplerOption.resampler(), blitter, turboSkip);
 }
 
 #else //ROM_BROWSER
@@ -968,7 +969,10 @@ int GambatteSdl::exec(int const argc, char const *const argv[]) {
 	                       scaleOption.scale(), yuvOption.isSet(),
 	                       fsOption.isSet());
 
-	init_globals(&gambatte, &blitter); //init global pointers
+    TurboSkip turboSkip;
+    turboSkip.setSpeed(fastforward_speed);
+
+	init_globals(&gambatte, &blitter, &turboSkip); //init global pointers
 
 	blitter.setBufferDimensions(); //set appropiate resolution on startup
 
@@ -988,7 +992,7 @@ int GambatteSdl::exec(int const argc, char const *const argv[]) {
 	}
 
 	return run(rateOption.rate(), latencyOption.latency(), periodsOption.periods(),
-	           resamplerOption.resampler(), blitter);
+	           resamplerOption.resampler(), blitter, turboSkip);
 }
 
 #endif //ROM_BROWSER
@@ -1136,13 +1140,12 @@ static bool isFastForward(Uint8 const *keys) {
 }
 
 int GambatteSdl::run(long const sampleRate, int const latency, int const periods,
-                     ResamplerInfo const &resamplerInfo, BlitterWrapper &blitter) {
+                     ResamplerInfo const &resamplerInfo, BlitterWrapper &blitter,
+                     TurboSkip &turboSkip) {
 	Array<Uint32> const audioBuf(gb_samples_per_frame + gambatte_max_overproduction);
 	AudioOut aout(sampleRate, latency, periods, resamplerInfo, audioBuf.size());
 	FrameWait frameWait;
 	SkipSched skipSched;
-    TurboSkip turboSkip;
-    turboSkip.setSpeed(3);
 	Uint8 const *const keys = SDL_GetKeyState(0);
 	std::size_t bufsamples = 0;
 	bool audioOutBufLow = false;

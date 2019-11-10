@@ -6,6 +6,7 @@
 #include <gambatte.h>
 #include "src/blitterwrapper.h"
 #include "builddate.h"
+#include "turboskip.h"
 
 #include "libmenu.h"
 #include "sfont_gameboy.h"
@@ -41,10 +42,12 @@ static std::string gamedir = (homedir + "/roms");
 
 gambatte::GB *gambatte_p;
 BlitterWrapper *blitter_p;
+TurboSkip *turboskip_p;
 
-void init_globals(gambatte::GB *gambatte, BlitterWrapper *blitter){
+void init_globals(gambatte::GB *gambatte, BlitterWrapper *blitter, TurboSkip *turboskip){
     blitter_p = blitter;
     gambatte_p = gambatte;
+    turboskip_p = turboskip;
 }
 
 int init_fps_font() {
@@ -209,6 +212,7 @@ static void callback_gbcborderimage(menu_t *caller_menu);
 static void callback_usebios(menu_t *caller_menu);
 static void callback_ghosting(menu_t *caller_menu);
 static void callback_buttonlayout(menu_t *caller_menu);
+static void callback_fastforward(menu_t *caller_menu);
 static void callback_sound(menu_t *caller_menu);
 
 static void callback_gamegenie(menu_t *caller_menu);
@@ -809,6 +813,11 @@ static void callback_settings(menu_t *caller_menu) {
     menu_entry->callback = callback_buttonlayout;
 
     menu_entry = new_menu_entry(0);
+    menu_entry_set_text(menu_entry, "Fast-forward");
+    menu_add_entry(menu, menu_entry);
+    menu_entry->callback = callback_fastforward;
+
+    menu_entry = new_menu_entry(0);
     menu_entry_set_text(menu_entry, "Sound");
     menu_add_entry(menu, menu_entry);
     menu_entry->callback = callback_sound;
@@ -1065,6 +1074,73 @@ static void callback_selectedscaler(menu_t *caller_menu) {
 }
 
 static void callback_scaler_back(menu_t *caller_menu) {
+    playMenuSound_back();
+    caller_menu->quit = 1;
+}
+
+/* ==================== FAST-FORWARD MENU =========================== */
+
+static void callback_selectedfastforward(menu_t *caller_menu);
+static void callback_fastforward_back(menu_t *caller_menu);
+
+static void callback_fastforward(menu_t *caller_menu) {
+
+    menu_t *menu;
+    menu_entry_t *menu_entry;
+    (void) caller_menu;
+    menu = new_menu();
+
+    menu_set_header(menu, menu_main_title.c_str());
+    menu_set_title(menu, "Fast-Forward Speed");
+    menu->back_callback = callback_fastforward_back;
+
+    menu_entry = new_menu_entry(0);
+    menu_entry_set_text(menu_entry, "Disabled");
+    menu_add_entry(menu, menu_entry);
+    menu_entry->callback = callback_selectedfastforward;
+
+    menu_entry = new_menu_entry(0);
+    menu_entry_set_text(menu_entry, "2x");
+    menu_add_entry(menu, menu_entry);
+    menu_entry->callback = callback_selectedfastforward;
+
+    menu_entry = new_menu_entry(0);
+    menu_entry_set_text(menu_entry, "3x");
+    menu_add_entry(menu, menu_entry);
+    menu_entry->callback = callback_selectedfastforward;
+
+    menu_entry = new_menu_entry(0);
+    menu_entry_set_text(menu_entry, "4x");
+    menu_add_entry(menu, menu_entry);
+    menu_entry->callback = callback_selectedfastforward;
+
+    menu_entry = new_menu_entry(0);
+    menu_entry_set_text(menu_entry, "5x");
+    menu_add_entry(menu, menu_entry);
+    menu_entry->callback = callback_selectedfastforward;
+
+    menu_entry = new_menu_entry(0);
+    menu_entry_set_text(menu_entry, "6x");
+    menu_add_entry(menu, menu_entry);
+    menu_entry->callback = callback_selectedfastforward;
+
+    menu->selected_entry = fastforward_speed - 1;
+
+    playMenuSound_in();
+    menu_main(menu);
+
+    delete_menu(menu);
+}
+
+static void callback_selectedfastforward(menu_t *caller_menu) {
+    playMenuSound_ok();
+    fastforward_speed = caller_menu->selected_entry + 1;
+    turboskip_p->setSpeed(fastforward_speed);
+    clean_menu_screen(caller_menu);
+    caller_menu->quit = 0;
+}
+
+static void callback_fastforward_back(menu_t *caller_menu) {
     playMenuSound_back();
     caller_menu->quit = 1;
 }
