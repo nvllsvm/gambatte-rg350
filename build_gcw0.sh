@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 BDAT=$(date +"%Y%m%d-%H%M%S")
 
