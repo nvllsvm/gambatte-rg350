@@ -24,6 +24,7 @@
 #include "resample/resamplerinfo.h"
 #include "skipsched.h"
 #include "str_to_sdlkey.h"
+#include "turboskip.h"
 #include "videolink/vfilterinfo.h"
 #include <gambatte.h>
 #include <pakinfo.h>
@@ -594,7 +595,7 @@ private:
 	jmap_t jaMap;
 	jmap_t jhMap;
 
-	bool handleEvents(BlitterWrapper &blitter);
+	bool handleEvents(BlitterWrapper &blitter, TurboSkip &turboSkip);
 	int run(long sampleRate, int latency, int periods,
 	        ResamplerInfo const &resamplerInfo, BlitterWrapper &blitter);
 	void refreshKeymaps();
@@ -1006,7 +1007,7 @@ void GambatteSdl::refreshKeymaps() {
 	}
 }
 
-bool GambatteSdl::handleEvents(BlitterWrapper &blitter) {
+bool GambatteSdl::handleEvents(BlitterWrapper &blitter, TurboSkip &turboSkip) {
 	JoyData jd;
 	SDL_Event e;
 	
@@ -1074,6 +1075,8 @@ bool GambatteSdl::handleEvents(BlitterWrapper &blitter) {
 	#if defined VERSION_GCW0
 					case SDLK_BACKSPACE: // L trigger
 					case SDLK_TAB: // R trigger
+                        turboSkip.setEnabled(!turboSkip.isEnabled());
+                        break;
 	#endif
 					case SDLK_HOME: // "power flick" in GCW Zero
 					case SDLK_END: // power/suspend button in retrofw
@@ -1138,6 +1141,8 @@ int GambatteSdl::run(long const sampleRate, int const latency, int const periods
 	AudioOut aout(sampleRate, latency, periods, resamplerInfo, audioBuf.size());
 	FrameWait frameWait;
 	SkipSched skipSched;
+    TurboSkip turboSkip;
+    turboSkip.setSpeed(3);
 	Uint8 const *const keys = SDL_GetKeyState(0);
 	std::size_t bufsamples = 0;
 	bool audioOutBufLow = false;
@@ -1146,7 +1151,7 @@ int GambatteSdl::run(long const sampleRate, int const latency, int const periods
 
 	for (;;) {
 
-		if (handleEvents(blitter))
+		if (handleEvents(blitter, turboSkip))
 			return 0;
 
 		BlitterWrapper::Buf const &vbuf = blitter.inBuf();
@@ -1159,12 +1164,7 @@ int GambatteSdl::run(long const sampleRate, int const latency, int const periods
 		bufsamples += runsamples;
 		bufsamples -= outsamples;
 
-		if (isFastForward(keys)) {
-			if (vidFrameDoneSampleCnt >= 0) {
-				blitter.draw();
-				blitter.present();
-			}
-		} else {
+		if (!turboSkip.skip()) {
 			bool const blit = vidFrameDoneSampleCnt >= 0
 			               && !skipSched.skipNext(audioOutBufLow);
 			if (blit)
