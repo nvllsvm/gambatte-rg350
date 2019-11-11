@@ -3,6 +3,7 @@
 *.opk
 .sconf_temp/
 .sconsign.dblite
+/build
 /gambatte_sdl/builddate.h
 /gambatte_sdl/gambatte_sdl
 config.log
