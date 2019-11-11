@@ -11,7 +11,7 @@ scons -Q target=gcw0 -C libgambatte
 scons -Q target=gcw0 -C gambatte_sdl
 
 mkdir -p build
-target="build/gambatte-gcw0-r572u3-${BDAT}.opk"
+target="build/gambatte-rg350-r572u3-${BDAT}.opk"
 
 mksquashfs \
     ./dist/gcw0/default.gcw0.desktop \
