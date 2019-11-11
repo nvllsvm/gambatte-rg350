@@ -246,12 +246,12 @@ Boston, MA  02111-1307, USA
 
 ------------------------------------------------
 
-GCW Zero port, additional features and menu
-rework by Hi-Ban.
+RG-350 port, additional features and menu
+rework by Hi-Ban and nvllsvm.
 Special thanks to Surkow, Senquack and Pingflood
 for helping this noob.
 Source code available at:
-https://github.com/bardeci/dot-matrix-simulator
+https://github.com/nvllsvm/gambatte-rg350
 
 ------------------------------------------------
 
