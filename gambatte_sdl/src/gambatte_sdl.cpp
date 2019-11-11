@@ -1077,11 +1077,13 @@ bool GambatteSdl::handleEvents(BlitterWrapper &blitter, TurboSkip &turboSkip) {
 					case SDLK_RCTRL: // R button in bittboy - Reset button in PocketGo
 #else
 	#if defined VERSION_GCW0
-					case SDLK_BACKSPACE: // L trigger
-					case SDLK_TAB: // R trigger
+					//case SDLK_BACKSPACE: // L trigger
+					//case SDLK_TAB: // R trigger
+					case SDLK_PAGEDOWN: // R2
                         turboSkip.setEnabled(!turboSkip.isEnabled());
                         break;
 	#endif
+					case SDLK_PAGEUP: // L2
 					case SDLK_HOME: // "power flick" in GCW Zero
 					case SDLK_END: // power/suspend button in retrofw
 #endif
